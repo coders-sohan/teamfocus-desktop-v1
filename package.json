@@ -1,0 +1,35 @@
+{
+  "name": "teamfocus-desktop",
+  "version": "1.0.0",
+  "description": "TeamFocus Desktop App - Work tracking and screenshot capture for team members",
+  "main": "src/main/main.js",
+  "author": "RISOSI",
+  "license": "MIT",
+  "productName": "TeamFocus",
+  "executableName": "teamfocus",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\""
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.1",
+    "@electron-forge/maker-deb": "^7.11.1",
+    "@electron-forge/maker-dmg": "^7.11.1",
+    "@electron-forge/maker-rpm": "^7.11.1",
+    "@electron-forge/maker-squirrel": "^7.11.1",
+    "@electron-forge/maker-zip": "^7.11.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
+    "@electron-forge/plugin-fuses": "^7.11.1",
+    "@electron/fuses": "^2.0.0",
+    "@electron/rebuild": "^4.0.3",
+    "electron": "^40.2.1"
+  },
+  "dependencies": {
+    "active-win": "^9.0.0",
+    "electron-squirrel-startup": "^1.0.1",
+    "screenshot-desktop": "^1.15.3"
+  }
+}

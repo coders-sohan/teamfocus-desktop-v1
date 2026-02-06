@@ -1,0 +1,43 @@
+.teamfocus-toast-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.teamfocus-toast-container.teamfocus-toast-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.teamfocus-toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 90vw;
+}
+
+.teamfocus-toast-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.teamfocus-toast-success {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.teamfocus-toast-info {
+  background: var(--color-primary-foreground, #fff);
+  color: var(--color-secondary, #020617);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
