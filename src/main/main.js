@@ -114,7 +114,10 @@ let quitting = false;
 
 function parseVersion(v) {
   if (!v || typeof v !== "string") return [0, 0, 0];
-  return v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+  return v
+    .replace(/^v/, "")
+    .split(".")
+    .map((n) => parseInt(n, 10) || 0);
 }
 
 function isNewerVersion(latest, current) {
@@ -128,10 +131,17 @@ function isNewerVersion(latest, current) {
 }
 
 async function checkForUpdate() {
-  const platform = process.platform === "darwin" ? "macos" : process.platform === "win32" ? "windows" : null;
+  const platform =
+    process.platform === "darwin"
+      ? "macos"
+      : process.platform === "win32"
+        ? "windows"
+        : null;
   const currentVersion = require("../../package.json").version || "0.0.0";
-  const apiBase = (config && config.apiBaseUrl) || "http://localhost:5000/api/v1";
-  const frontendUrl = (config && config.frontendUrl) || "http://localhost:5173";
+  const apiBase =
+    (config && config.apiBaseUrl) || "https://api-teamfocus.risosi.com/api/v1";
+  const frontendUrl =
+    (config && config.frontendUrl) || "https://teamfocus.risosi.com";
 
   if (!platform) {
     dialog.showMessageBox(mainWindow || null, {
@@ -147,7 +157,9 @@ async function checkForUpdate() {
     const url = `${apiBase.replace(/\/$/, "")}/applications/latest/${platform}`;
     const res = await fetch(url);
     if (!res.ok) {
-      throw new Error(res.status === 404 ? "No release found" : `HTTP ${res.status}`);
+      throw new Error(
+        res.status === 404 ? "No release found" : `HTTP ${res.status}`,
+      );
     }
     const data = await res.json();
     const release = data && data.release;
@@ -170,7 +182,8 @@ async function checkForUpdate() {
         type: "info",
         title: "Update available",
         message: `Version ${latestVersion} is available.`,
-        detail: "A new tab has been opened. Download the update from the TeamFocus website.",
+        detail:
+          "A new tab has been opened. Download the update from the TeamFocus website.",
       });
     } else {
       dialog.showMessageBox(mainWindow || null, {
@@ -317,7 +330,13 @@ function updateTrayMenu() {
   const template = [
     { label: "Show Window", click: showWindow },
     { type: "separator" },
-    { label: "Quit", click: () => { quitting = true; app.quit(); } },
+    {
+      label: "Quit",
+      click: () => {
+        quitting = true;
+        app.quit();
+      },
+    },
   ];
   tray.setContextMenu(Menu.buildFromTemplate(template));
 }
@@ -366,9 +385,10 @@ function createWindow() {
   mainWindow.webContents.on("did-finish-load", () => {
     const apiBase =
       (config && config.apiBaseUrl) ||
-      process.env.API_BASE_URL ||
-      "http://localhost:5000/api/v1";
-    const safeUrl = JSON.stringify(String(apiBase).trim() || "http://localhost:5000/api/v1");
+      "https://api-teamfocus.risosi.com/api/v1";
+    const safeUrl = JSON.stringify(
+      String(apiBase).trim() || "https://api-teamfocus.risosi.com/api/v1",
+    );
     mainWindow.webContents.executeJavaScript(
       "window.API_BASE_URL = " +
         safeUrl +
@@ -417,7 +437,6 @@ function registerAppLifecycleIPC() {
       return Promise.resolve(false);
     }
   });
-
 }
 
 app.on("ready", () => {
