@@ -38,6 +38,7 @@
       const query = toQueryString({
         dateFrom: params.dateFrom,
         dateTo: params.dateTo,
+        order: params.order,
       });
       return api.get('/work-events/my/summary' + query);
     },

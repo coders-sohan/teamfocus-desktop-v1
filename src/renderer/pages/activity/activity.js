@@ -5,6 +5,7 @@
   var currentLimit = 20;
   var currentDateFrom = "";
   var currentDateTo = "";
+  var currentSortOrder = "desc";
 
   function getDateInputFrom() {
     return document.getElementById("activity-date-from");
@@ -14,6 +15,18 @@
   }
   function getApplyBtn() {
     return document.getElementById("activity-apply-filters");
+  }
+  function getFilterBtn() {
+    return document.getElementById("activity-filter-btn");
+  }
+  function getSidebar() {
+    return document.getElementById("activity-filters-sidebar");
+  }
+  function getBackdrop() {
+    return document.getElementById("activity-filters-backdrop");
+  }
+  function getSortSelect() {
+    return document.getElementById("activity-sort");
   }
   function getDaySummaryList() {
     return document.getElementById("activity-day-summary-list");
@@ -29,6 +42,34 @@
   }
   function getPaginationEl() {
     return document.getElementById("activity-pagination");
+  }
+
+  function openFiltersSidebar() {
+    var sidebar = getSidebar();
+    var backdrop = getBackdrop();
+    if (sidebar) {
+      sidebar.classList.add("is-open");
+      sidebar.setAttribute("aria-hidden", "false");
+    }
+    if (backdrop) {
+      backdrop.hidden = false;
+      backdrop.classList.add("is-visible");
+      backdrop.setAttribute("aria-hidden", "false");
+    }
+  }
+
+  function closeFiltersSidebar() {
+    var sidebar = getSidebar();
+    var backdrop = getBackdrop();
+    if (sidebar) {
+      sidebar.classList.remove("is-open");
+      sidebar.setAttribute("aria-hidden", "true");
+    }
+    if (backdrop) {
+      backdrop.classList.remove("is-visible");
+      backdrop.setAttribute("aria-hidden", "true");
+      backdrop.hidden = true;
+    }
   }
 
   function formatDateKey(isoDateStr) {
@@ -60,16 +101,50 @@
     return "";
   }
 
+  function toYYYYMMDD(d) {
+    return d.getUTCFullYear() + "-" + (String(d.getUTCMonth() + 1).padStart(2, "0")) + "-" + (String(d.getUTCDate()).padStart(2, "0"));
+  }
+
   function setDefaultDateRange() {
     var to = new Date();
     var from = new Date(to);
     from.setUTCDate(from.getUTCDate() - 6);
-    currentDateFrom = from.getUTCFullYear() + "-" + (String(from.getUTCMonth() + 1).padStart(2, "0")) + "-" + (String(from.getUTCDate()).padStart(2, "0"));
-    currentDateTo = to.getUTCFullYear() + "-" + (String(to.getUTCMonth() + 1).padStart(2, "0")) + "-" + (String(to.getUTCDate()).padStart(2, "0"));
+    currentDateFrom = toYYYYMMDD(from);
+    currentDateTo = toYYYYMMDD(to);
     var fromEl = getDateInputFrom();
     var toEl = getDateInputTo();
     if (fromEl) fromEl.value = currentDateFrom;
     if (toEl) toEl.value = currentDateTo;
+  }
+
+  function setDateRangeFromPreset(preset) {
+    var to = new Date();
+    var from = new Date(to);
+    if (preset === "today" || preset === "yesterday") {
+      if (preset === "yesterday") {
+        from.setUTCDate(from.getUTCDate() - 1);
+        to = new Date(from);
+      } else {
+        from = new Date(to);
+      }
+    } else if (preset === "last3") {
+      from.setUTCDate(from.getUTCDate() - 2);
+    } else if (preset === "last7") {
+      from.setUTCDate(from.getUTCDate() - 6);
+    } else if (preset === "last15") {
+      from.setUTCDate(from.getUTCDate() - 14);
+    } else if (preset === "month") {
+      from.setUTCDate(1);
+    }
+    var fromEl = getDateInputFrom();
+    var toEl = getDateInputTo();
+    if (preset === "month") {
+      if (fromEl) fromEl.value = toYYYYMMDD(from);
+      if (toEl) toEl.value = toYYYYMMDD(to);
+    } else {
+      if (fromEl) fromEl.value = toYYYYMMDD(from);
+      if (toEl) toEl.value = toYYYYMMDD(to);
+    }
   }
 
   function loadSummary() {
@@ -78,7 +153,7 @@
     var emptyEl = getSummaryEmpty();
     if (list) list.innerHTML = "<p class=\"activity-loading\">Loading…</p>";
     if (emptyEl) emptyEl.hidden = true;
-    workEventsService.getMyWorkSummary({ dateFrom: currentDateFrom, dateTo: currentDateTo }).then(function (res) {
+    workEventsService.getMyWorkSummary({ dateFrom: currentDateFrom, dateTo: currentDateTo, order: "desc" }).then(function (res) {
       var list = getDaySummaryList();
       var emptyEl = getSummaryEmpty();
       if (!list) return;
@@ -121,7 +196,7 @@
       page: currentPage,
       limit: currentLimit,
       sort: "timestamp",
-      order: "desc",
+      order: currentSortOrder,
     }).then(function (res) {
       var list = getEventsList();
       var emptyEl = getEventsEmpty();
@@ -192,11 +267,14 @@
   function applyFilters() {
     var fromEl = getDateInputFrom();
     var toEl = getDateInputTo();
+    var sortEl = getSortSelect();
     if (fromEl && fromEl.value) currentDateFrom = fromEl.value;
     if (toEl && toEl.value) currentDateTo = toEl.value;
+    if (sortEl && (sortEl.value === "asc" || sortEl.value === "desc")) currentSortOrder = sortEl.value;
     currentPage = 1;
     loadSummary();
     loadEvents();
+    closeFiltersSidebar();
   }
 
   function render() {
@@ -209,10 +287,30 @@
 
   function init() {
     setDefaultDateRange();
+    var sortEl = getSortSelect();
+    if (sortEl) sortEl.value = currentSortOrder;
+
     var applyBtn = getApplyBtn();
-    if (applyBtn) {
-      applyBtn.addEventListener("click", applyFilters);
-    }
+    if (applyBtn) applyBtn.addEventListener("click", applyFilters);
+
+    var filterBtn = getFilterBtn();
+    if (filterBtn) filterBtn.addEventListener("click", openFiltersSidebar);
+
+    var closeBtn = document.getElementById("activity-filters-close");
+    if (closeBtn) closeBtn.addEventListener("click", closeFiltersSidebar);
+
+    var backdrop = getBackdrop();
+    if (backdrop) backdrop.addEventListener("click", closeFiltersSidebar);
+
+    document.querySelectorAll(".activity-preset-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var preset = btn.getAttribute("data-preset");
+        if (preset) {
+          setDateRangeFromPreset(preset);
+          applyFilters();
+        }
+      });
+    });
   }
 
   if (document.readyState === "loading") {

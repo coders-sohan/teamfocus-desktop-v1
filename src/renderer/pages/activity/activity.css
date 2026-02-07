@@ -1,11 +1,228 @@
-/* My Activity – work events only (no screenshots) */
-.activity-filters-section .activity-filters {
+/* My Activity – toolbar and filter button */
+.activity-content {
+  position: relative;
+}
+
+.activity-toolbar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
   flex-wrap: wrap;
-  align-items: flex-end;
   gap: 12px;
 }
 
+.activity-toolbar-title {
+  margin-bottom: 0;
+}
+
+.activity-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: var(--color-primary-foreground);
+  color: var(--color-secondary);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.activity-filter-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.activity-filter-btn i {
+  font-size: 0.875rem;
+}
+
+/* Filter sidebar – right side; slides right to left when open, left to right when close */
+.activity-filters-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: calc(100vw - 260px);
+  z-index: 101;
+  transform: translateX(100%);
+  transition: transform 0.25s ease-out;
+  pointer-events: none;
+}
+
+.activity-filters-sidebar.is-open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.activity-filters-sidebar-panel {
+  height: 100%;
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.activity-filters-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.activity-filters-sidebar-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-secondary-foreground);
+  margin: 0;
+}
+
+.activity-filters-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.activity-filters-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.activity-filters-sidebar-body {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.activity-filters-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activity-filters-block-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 4px;
+}
+
+.activity-filters-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.activity-preset-btn {
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-secondary-foreground);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.activity-preset-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.activity-filters-block .activity-filter-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.activity-filters-block .activity-date-input {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--color-secondary-foreground);
+  min-width: 100%;
+}
+
+.activity-filters-block .activity-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.7;
+}
+
+.activity-sort-select {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  font-size: 0.9375rem;
+  color: var(--color-secondary-foreground);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23e5e7eb' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.activity-sort-select:hover,
+.activity-sort-select:focus {
+  border-color: rgba(255, 255, 255, 0.4);
+  outline: none;
+}
+
+.activity-apply-btn-full {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 10px;
+  margin-top: 8px;
+  cursor: pointer;
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  transition: background 0.15s, filter 0.15s;
+}
+
+.activity-apply-btn-full:hover {
+  filter: brightness(1.08);
+}
+
+.activity-filters-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease-out, visibility 0.25s;
+}
+
+.activity-filters-backdrop.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Inline filter label/inputs (used inside sidebar) */
 .activity-filter-label {
   display: flex;
   flex-direction: column;

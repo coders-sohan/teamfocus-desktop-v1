@@ -1,210 +1,476 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TeamFocus</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./pages/login/login.css">
-  <link rel="stylesheet" href="./pages/dashboard/dashboard.css">
-  <link rel="stylesheet" href="./components/workControls/workControls.css">
-  <link rel="stylesheet" href="./pages/activity/activity.css">
-  <link rel="stylesheet" href="./pages/profile/profile.css">
-  <link rel="stylesheet" href="./utils/notifications.css">
-</head>
-<body>
-  <div id="app">
-    <div id="screen-login-container" hidden></div>
-    <div id="screen-dashboard" class="screen-dashboard" hidden>
-      <aside class="dashboard-sidebar">
-        <div class="sidebar-brand">
-          <i class="fa-solid fa-bullseye" aria-hidden="true"></i>
-          <span>TeamFocus</span>
-        </div>
-        <nav class="sidebar-nav">
-          <a href="#" class="sidebar-link sidebar-link-active" data-page="dashboard" id="nav-dashboard">
-            <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
-            <span>Dashboard</span>
-          </a>
-          <a href="#" class="sidebar-link" data-page="activity" id="nav-activity">
-            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
-            <span>My Activity</span>
-          </a>
-          <a href="#" class="sidebar-link" data-page="profile" id="nav-profile">
-            <i class="fa-solid fa-user" aria-hidden="true"></i>
-            <span>Profile</span>
-          </a>
-        </nav>
-        <div class="sidebar-footer">
-          <button type="button" id="dashboard-logout" class="sidebar-logout" aria-label="Log out">
-            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
-            <span>Log out</span>
-          </button>
-        </div>
-      </aside>
-      <div class="dashboard-main">
-        <header class="dashboard-header">
-          <div class="header-spacer"></div>
-          <div id="offline-indicator" class="offline-indicator" hidden aria-live="polite">
-            <i class="fa-solid fa-wifi-slash" aria-hidden="true"></i>
-            <span>Offline — requests will retry when back online</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TeamFocus</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./pages/login/login.css" />
+    <link rel="stylesheet" href="./pages/dashboard/dashboard.css" />
+    <link rel="stylesheet" href="./components/workControls/workControls.css" />
+    <link rel="stylesheet" href="./pages/activity/activity.css" />
+    <link rel="stylesheet" href="./pages/profile/profile.css" />
+    <link rel="stylesheet" href="./utils/notifications.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="screen-login-container" hidden></div>
+      <div id="screen-dashboard" class="screen-dashboard" hidden>
+        <aside class="dashboard-sidebar">
+          <div class="sidebar-brand">
+            <i class="fa-solid fa-bullseye" aria-hidden="true"></i>
+            <span>TeamFocus</span>
           </div>
-          <div class="header-right">
-            <div class="header-datetime">
-              <span class="header-time" id="header-time">--:--:--</span>
-              <span class="header-date" id="header-date">—</span>
-            </div>
-            <div class="header-user">
-              <span class="header-user-name" id="header-user-name">—</span>
-              <span class="header-user-email" id="header-user-email">—</span>
-            </div>
+          <nav class="sidebar-nav">
+            <a
+              href="#"
+              class="sidebar-link sidebar-link-active"
+              data-page="dashboard"
+              id="nav-dashboard"
+            >
+              <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+            <a
+              href="#"
+              class="sidebar-link"
+              data-page="activity"
+              id="nav-activity"
+            >
+              <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+              <span>My Activity</span>
+            </a>
+            <a
+              href="#"
+              class="sidebar-link"
+              data-page="profile"
+              id="nav-profile"
+            >
+              <i class="fa-solid fa-user" aria-hidden="true"></i>
+              <span>Profile</span>
+            </a>
+          </nav>
+          <div class="sidebar-footer">
+            <button
+              type="button"
+              id="dashboard-logout"
+              class="sidebar-logout"
+              aria-label="Log out"
+            >
+              <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+              <span>Log out</span>
+            </button>
           </div>
-        </header>
-        <main class="dashboard-content" id="dashboard-content">
-          <section class="dashboard-section work-section">
-            <h2 class="section-title">Work session</h2>
-            <div id="work-controls" class="work-controls">
-              <div class="work-controls-status">
-                <span id="work-controls-badge" class="work-controls-badge work-controls-badge-idle">Idle</span>
-                <span id="work-controls-session-time" class="work-controls-session-time" aria-live="polite"></span>
-              </div>
-              <div class="work-controls-buttons">
-                <button type="button" id="work-controls-start" class="work-controls-btn work-controls-btn-start" title="Start work">
-                  <i class="fa-solid fa-play" aria-hidden="true"></i>
-                  <span>Start</span>
-                </button>
-                <button type="button" id="work-controls-pause" class="work-controls-btn work-controls-btn-pause" disabled title="Pause">
-                  <i class="fa-solid fa-pause" aria-hidden="true"></i>
-                  <span>Pause</span>
-                </button>
-                <button type="button" id="work-controls-resume" class="work-controls-btn work-controls-btn-resume" disabled title="Resume">
-                  <i class="fa-solid fa-play" aria-hidden="true"></i>
-                  <span>Resume</span>
-                </button>
-                <button type="button" id="work-controls-stop" class="work-controls-btn work-controls-btn-stop" disabled title="Stop session">
-                  <i class="fa-solid fa-stop" aria-hidden="true"></i>
-                  <span>Stop</span>
-                </button>
-              </div>
-              <div id="work-controls-error" class="work-controls-error" role="alert" hidden></div>
+        </aside>
+        <div class="dashboard-main">
+          <header class="dashboard-header">
+            <div class="header-spacer"></div>
+            <div
+              id="offline-indicator"
+              class="offline-indicator"
+              hidden
+              aria-live="polite"
+            >
+              <i class="fa-solid fa-wifi-slash" aria-hidden="true"></i>
+              <span>Offline — requests will retry when back online</span>
             </div>
-          </section>
-          <section class="dashboard-section summary-section">
-            <h2 class="section-title">Today's summary</h2>
-            <div class="summary-cards">
-              <div class="summary-card">
-                <span class="summary-card-value" id="summary-work-minutes">0</span>
-                <span class="summary-card-label">Work (min)</span>
+            <div class="header-right">
+              <div class="header-datetime">
+                <span class="header-time" id="header-time">--:--:--</span>
+                <span class="header-date" id="header-date">—</span>
               </div>
-              <div class="summary-card">
-                <span class="summary-card-value" id="summary-pause-minutes">0</span>
-                <span class="summary-card-label">Pause (min)</span>
-              </div>
-              <div class="summary-card">
-                <span class="summary-card-value" id="summary-sessions">0</span>
-                <span class="summary-card-label">Sessions</span>
+              <div class="header-user">
+                <span class="header-user-name" id="header-user-name">—</span>
+                <span class="header-user-email" id="header-user-email">—</span>
               </div>
             </div>
-          </section>
-          <section class="dashboard-section trial-section">
-            <h2 class="section-title">Trial status</h2>
-            <div class="trial-status" id="trial-status">
-              <div class="trial-status-icon" id="trial-status-icon" aria-hidden="true">
-                <i class="fa-solid fa-calendar-check"></i>
+          </header>
+          <main class="dashboard-content" id="dashboard-content">
+            <section class="dashboard-section work-section">
+              <h2 class="section-title">Work session</h2>
+              <div id="work-controls" class="work-controls">
+                <div class="work-controls-status">
+                  <span
+                    id="work-controls-badge"
+                    class="work-controls-badge work-controls-badge-idle"
+                    >Idle</span
+                  >
+                  <span
+                    id="work-controls-session-time"
+                    class="work-controls-session-time"
+                    aria-live="polite"
+                  ></span>
+                </div>
+                <div class="work-controls-buttons">
+                  <button
+                    type="button"
+                    id="work-controls-start"
+                    class="work-controls-btn work-controls-btn-start"
+                    title="Start work"
+                  >
+                    <i class="fa-solid fa-play" aria-hidden="true"></i>
+                    <span>Start</span>
+                  </button>
+                  <button
+                    type="button"
+                    id="work-controls-pause"
+                    class="work-controls-btn work-controls-btn-pause"
+                    disabled
+                    title="Pause"
+                  >
+                    <i class="fa-solid fa-pause" aria-hidden="true"></i>
+                    <span>Pause</span>
+                  </button>
+                  <button
+                    type="button"
+                    id="work-controls-resume"
+                    class="work-controls-btn work-controls-btn-resume"
+                    disabled
+                    title="Resume"
+                  >
+                    <i class="fa-solid fa-play" aria-hidden="true"></i>
+                    <span>Resume</span>
+                  </button>
+                  <button
+                    type="button"
+                    id="work-controls-stop"
+                    class="work-controls-btn work-controls-btn-stop"
+                    disabled
+                    title="Stop session"
+                  >
+                    <i class="fa-solid fa-stop" aria-hidden="true"></i>
+                    <span>Stop</span>
+                  </button>
+                </div>
+                <div
+                  id="work-controls-error"
+                  class="work-controls-error"
+                  role="alert"
+                  hidden
+                ></div>
               </div>
-              <div class="trial-status-body">
-                <span class="trial-status-days" id="trial-status-days">—</span>
-                <span class="trial-status-label" id="trial-status-label">days remaining</span>
+            </section>
+            <section class="dashboard-section summary-section">
+              <h2 class="section-title">Today's summary</h2>
+              <div class="summary-cards">
+                <div class="summary-card">
+                  <span class="summary-card-value" id="summary-work-minutes"
+                    >0</span
+                  >
+                  <span class="summary-card-label">Work (min)</span>
+                </div>
+                <div class="summary-card">
+                  <span class="summary-card-value" id="summary-pause-minutes"
+                    >0</span
+                  >
+                  <span class="summary-card-label">Pause (min)</span>
+                </div>
+                <div class="summary-card">
+                  <span class="summary-card-value" id="summary-sessions"
+                    >0</span
+                  >
+                  <span class="summary-card-label">Sessions</span>
+                </div>
               </div>
-            </div>
-          </section>
-        </main>
-        <main class="dashboard-content profile-content" id="profile-content" hidden>
-          <section class="dashboard-section profile-section">
-            <h2 class="section-title">Profile</h2>
-            <div class="profile-user-info" id="profile-user-info">
-              <p class="profile-field"><span class="profile-label">Name</span> <span id="profile-name">—</span></p>
-              <p class="profile-field"><span class="profile-label">Email</span> <span id="profile-email">—</span></p>
-            </div>
-            <form id="profile-edit-form" class="profile-edit-form" hidden>
-              <label class="profile-edit-label">
-                <span>Name</span>
-                <input type="text" id="profile-edit-name" class="profile-edit-input" placeholder="Your name" />
+            </section>
+            <section class="dashboard-section trial-section">
+              <h2 class="section-title">Trial status</h2>
+              <div class="trial-status" id="trial-status">
+                <div
+                  class="trial-status-icon"
+                  id="trial-status-icon"
+                  aria-hidden="true"
+                >
+                  <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div class="trial-status-body">
+                  <span class="trial-status-days" id="trial-status-days"
+                    >—</span
+                  >
+                  <span class="trial-status-label" id="trial-status-label"
+                    >days remaining</span
+                  >
+                </div>
+              </div>
+            </section>
+          </main>
+          <main
+            class="dashboard-content profile-content"
+            id="profile-content"
+            hidden
+          >
+            <section class="dashboard-section profile-section">
+              <h2 class="section-title">Profile</h2>
+              <div class="profile-user-info" id="profile-user-info">
+                <p class="profile-field">
+                  <span class="profile-label">Name</span>
+                  <span id="profile-name">—</span>
+                </p>
+                <p class="profile-field">
+                  <span class="profile-label">Email</span>
+                  <span id="profile-email">—</span>
+                </p>
+              </div>
+              <form id="profile-edit-form" class="profile-edit-form" hidden>
+                <label class="profile-edit-label">
+                  <span>Name</span>
+                  <input
+                    type="text"
+                    id="profile-edit-name"
+                    class="profile-edit-input"
+                    placeholder="Your name"
+                  />
+                </label>
+                <div class="profile-edit-actions">
+                  <button
+                    type="submit"
+                    class="btn btn-primary profile-save-btn"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    id="profile-edit-cancel"
+                    class="btn profile-cancel-btn"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <p
+                  id="profile-edit-error"
+                  class="profile-edit-error"
+                  role="alert"
+                  hidden
+                ></p>
+              </form>
+              <button
+                type="button"
+                id="profile-edit-toggle"
+                class="btn btn-secondary profile-edit-toggle"
+              >
+                Edit profile
+              </button>
+            </section>
+            <section class="dashboard-section profile-team-section">
+              <h2 class="section-title">Team</h2>
+              <div class="profile-team-info" id="profile-team-info">
+                <p class="profile-field">
+                  <span class="profile-label">Team name</span>
+                  <span id="profile-team-name">—</span>
+                </p>
+                <p class="profile-field">
+                  <span class="profile-label">Screenshot interval</span>
+                  <span id="profile-interval">—</span>
+                </p>
+                <p class="profile-field">
+                  <span class="profile-label">Trial ends</span>
+                  <span id="profile-trial-ends">—</span>
+                </p>
+              </div>
+            </section>
+            <section
+              class="dashboard-section profile-app-section"
+              id="profile-app-section"
+              hidden
+            >
+              <h2 class="section-title">App</h2>
+              <label class="profile-checkbox-label">
+                <input
+                  type="checkbox"
+                  id="profile-auto-launch"
+                  class="profile-checkbox"
+                />
+                <span>Start TeamFocus when I log in</span>
               </label>
-              <div class="profile-edit-actions">
-                <button type="submit" class="btn btn-primary profile-save-btn">Save</button>
-                <button type="button" id="profile-edit-cancel" class="btn profile-cancel-btn">Cancel</button>
+            </section>
+            <section class="dashboard-section profile-actions-section">
+              <button
+                type="button"
+                id="profile-logout"
+                class="btn profile-logout-btn"
+              >
+                Log out
+              </button>
+            </section>
+          </main>
+          <main
+            class="dashboard-content activity-content"
+            id="activity-content"
+            hidden
+          >
+            <div class="activity-toolbar">
+              <h2 class="section-title activity-toolbar-title">My Activity</h2>
+              <button
+                type="button"
+                id="activity-filter-btn"
+                class="btn activity-filter-btn"
+                aria-label="Open filters"
+              >
+                <i class="fa-solid fa-filter" aria-hidden="true"></i>
+                <span>Filter</span>
+              </button>
+            </div>
+            <div
+              id="activity-filters-sidebar"
+              class="activity-filters-sidebar"
+              aria-hidden="true"
+            >
+              <div class="activity-filters-sidebar-panel">
+                <div class="activity-filters-sidebar-header">
+                  <h3 class="activity-filters-sidebar-title">
+                    ACTIVITY FILTERS
+                  </h3>
+                  <button
+                    type="button"
+                    id="activity-filters-close"
+                    class="activity-filters-close"
+                    aria-label="Close filters"
+                  >
+                    <i class="fa-solid fa-times" aria-hidden="true"></i>
+                    Close
+                  </button>
+                </div>
+                <div class="activity-filters-sidebar-body">
+                  <div class="activity-filters-block">
+                    <p class="activity-filters-block-label">Date presets</p>
+                    <div class="activity-filters-presets">
+                      <button
+                        type="button"
+                        class="activity-preset-btn"
+                        data-preset="today"
+                      >
+                        Today
+                      </button>
+                      <button
+                        type="button"
+                        class="activity-preset-btn"
+                        data-preset="yesterday"
+                      >
+                        Yesterday
+                      </button>
+                      <button
+                        type="button"
+                        class="activity-preset-btn"
+                        data-preset="last3"
+                      >
+                        Last 3 days
+                      </button>
+                      <button
+                        type="button"
+                        class="activity-preset-btn"
+                        data-preset="last7"
+                      >
+                        Last 7 days
+                      </button>
+                      <button
+                        type="button"
+                        class="activity-preset-btn"
+                        data-preset="last15"
+                      >
+                        Last 15 days
+                      </button>
+                      <button
+                        type="button"
+                        class="activity-preset-btn"
+                        data-preset="month"
+                      >
+                        This month
+                      </button>
+                    </div>
+                  </div>
+                  <div class="activity-filters-block">
+                    <p class="activity-filters-block-label">
+                      Custom date range
+                    </p>
+                    <label class="activity-filter-label">
+                      <span>From</span>
+                      <input
+                        type="date"
+                        id="activity-date-from"
+                        class="activity-date-input"
+                        placeholder="mm/dd/yyyy"
+                      />
+                    </label>
+                    <label class="activity-filter-label">
+                      <span>To</span>
+                      <input
+                        type="date"
+                        id="activity-date-to"
+                        class="activity-date-input"
+                        placeholder="mm/dd/yyyy"
+                      />
+                    </label>
+                  </div>
+                  <div class="activity-filters-block">
+                    <p class="activity-filters-block-label">Sort</p>
+                    <select
+                      id="activity-sort"
+                      class="activity-sort-select"
+                      aria-label="Sort order"
+                    >
+                      <option value="desc">Newest first</option>
+                      <option value="asc">Oldest first</option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    id="activity-apply-filters"
+                    class="btn btn-primary activity-apply-btn-full"
+                  >
+                    Apply
+                  </button>
+                </div>
               </div>
-              <p id="profile-edit-error" class="profile-edit-error" role="alert" hidden></p>
-            </form>
-            <button type="button" id="profile-edit-toggle" class="btn btn-secondary profile-edit-toggle">Edit profile</button>
-          </section>
-          <section class="dashboard-section profile-team-section">
-            <h2 class="section-title">Team</h2>
-            <div class="profile-team-info" id="profile-team-info">
-              <p class="profile-field"><span class="profile-label">Team name</span> <span id="profile-team-name">—</span></p>
-              <p class="profile-field"><span class="profile-label">Screenshot interval</span> <span id="profile-interval">—</span></p>
-              <p class="profile-field"><span class="profile-label">Trial ends</span> <span id="profile-trial-ends">—</span></p>
             </div>
-          </section>
-          <section class="dashboard-section profile-app-section" id="profile-app-section" hidden>
-            <h2 class="section-title">App</h2>
-            <label class="profile-checkbox-label">
-              <input type="checkbox" id="profile-auto-launch" class="profile-checkbox" />
-              <span>Start TeamFocus when I log in</span>
-            </label>
-          </section>
-          <section class="dashboard-section profile-actions-section">
-            <button type="button" id="profile-logout" class="btn profile-logout-btn">Log out</button>
-          </section>
-        </main>
-        <main class="dashboard-content activity-content" id="activity-content" hidden>
-          <section class="dashboard-section activity-filters-section">
-            <h2 class="section-title">Date range</h2>
-            <div class="activity-filters">
-              <label class="activity-filter-label">
-                <span>From</span>
-                <input type="date" id="activity-date-from" class="activity-date-input" />
-              </label>
-              <label class="activity-filter-label">
-                <span>To</span>
-                <input type="date" id="activity-date-to" class="activity-date-input" />
-              </label>
-              <button type="button" id="activity-apply-filters" class="btn btn-primary activity-apply-btn">Apply</button>
-            </div>
-          </section>
-          <section class="dashboard-section activity-summary-section">
-            <h2 class="section-title">Day-wise summary</h2>
-            <div id="activity-day-summary-list" class="activity-day-summary-list"></div>
-            <p id="activity-summary-empty" class="activity-empty" hidden>No summary for this range.</p>
-          </section>
+            <div
+              id="activity-filters-backdrop"
+              class="activity-filters-backdrop"
+              hidden
+              aria-hidden="true"
+            ></div>
+            <section class="dashboard-section activity-summary-section">
+              <h2 class="section-title">Day-wise summary</h2>
+              <div
+                id="activity-day-summary-list"
+                class="activity-day-summary-list"
+              ></div>
+              <p id="activity-summary-empty" class="activity-empty" hidden>
+                No summary for this range.
+              </p>
+            </section>
+            <!-- Work events section – commented out (do not remove)
           <section class="dashboard-section activity-events-section">
             <h2 class="section-title">Work events</h2>
             <div id="activity-events-list" class="activity-events-list"></div>
             <p id="activity-events-empty" class="activity-empty" hidden>No events in this range.</p>
             <div id="activity-pagination" class="activity-pagination" hidden></div>
           </section>
-        </main>
+          --></main>
+        </div>
       </div>
     </div>
-  </div>
-  <script src="./utils/storage.js"></script>
-  <script src="./utils/notifications.js"></script>
-  <script src="./utils/screenshot.js"></script>
-  <script src="./utils/windowDetection.js"></script>
-  <script src="./state/appState.js"></script>
-  <script src="./services/apiClient.js"></script>
-  <script src="./services/authService.js"></script>
-  <script src="./services/teamsService.js"></script>
-  <script src="./services/workEventsService.js"></script>
-  <script src="./services/activityLogsService.js"></script>
-  <script src="./services/usersService.js"></script>
-  <script src="./pages/login/login.js"></script>
-  <script src="./components/workControls/workControls.js"></script>
-  <script src="./pages/dashboard/dashboard.js"></script>
-  <script src="./pages/activity/activity.js"></script>
-  <script src="./pages/profile/profile.js"></script>
-  <script src="./renderer.js"></script>
-</body>
+    <script src="./utils/storage.js"></script>
+    <script src="./utils/notifications.js"></script>
+    <script src="./utils/screenshot.js"></script>
+    <script src="./utils/windowDetection.js"></script>
+    <script src="./state/appState.js"></script>
+    <script src="./services/apiClient.js"></script>
+    <script src="./services/authService.js"></script>
+    <script src="./services/teamsService.js"></script>
+    <script src="./services/workEventsService.js"></script>
+    <script src="./services/activityLogsService.js"></script>
+    <script src="./services/usersService.js"></script>
+    <script src="./pages/login/login.js"></script>
+    <script src="./components/workControls/workControls.js"></script>
+    <script src="./pages/dashboard/dashboard.js"></script>
+    <script src="./pages/activity/activity.js"></script>
+    <script src="./pages/profile/profile.js"></script>
+    <script src="./renderer.js"></script>
+  </body>
 </html>
