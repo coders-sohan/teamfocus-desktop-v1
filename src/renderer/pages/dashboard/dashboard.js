@@ -175,8 +175,8 @@
     )
       return;
 
-    function uploadOne(displayIndex, activeWindow) {
-      return screenshotUtil.captureScreen(displayIndex).then(function (blob) {
+    function uploadOne(captureTarget, activeWindow) {
+      return screenshotUtil.captureScreen(captureTarget).then(function (blob) {
         if (!blob) return Promise.resolve();
         return activityLogsService
           .uploadFromCapture(blob, activeWindow)
@@ -184,20 +184,21 @@
       });
     }
 
-    function runInOrder(displayIndexes, activeWindow) {
+    function runInOrder(captureTargets, activeWindow) {
       var i = 0;
       function next() {
-        if (i >= displayIndexes.length) {
+        if (i >= captureTargets.length) {
           screenshotRetryCount = 0;
           return Promise.resolve();
         }
-        var idx = displayIndexes[i];
+        var target = captureTargets[i];
         i += 1;
-        return uploadOne(idx, activeWindow)
+        var label = typeof target === "object" && target && target.screenId != null ? target.screenId : target;
+        return uploadOne(target, activeWindow)
           .then(next)
           .catch(function (err) {
             console.error(
-              "[dashboard] Activity log upload failed (display " + idx + "):",
+              "[dashboard] Activity log upload failed (display " + label + "):",
               err,
             );
             throw err;
@@ -218,10 +219,12 @@
       .then(function (res) {
         var displays = res[0] || [];
         var activeWindow = res[1] || null;
-        var displayIndexes = displays.length
-          ? displays.map(function (d) { return d.index; }).sort(function (a, b) { return a - b; })
+        var captureTargets = displays.length
+          ? displays.map(function (d) {
+              return d.screenId != null ? { displayIndex: d.index, screenId: d.screenId } : d.index;
+            })
           : [0];
-        return runInOrder(displayIndexes, activeWindow);
+        return runInOrder(captureTargets, activeWindow);
       })
       .then(function () {
         screenshotRetryCount = 0;

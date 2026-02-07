@@ -8,7 +8,7 @@
     return electronAPI.getDisplays();
   }
 
-  function captureScreen(displayIndex) {
+  function captureScreen(displayIndexOrOptions) {
     if (!electronAPI || !electronAPI.captureScreen) {
       return Promise.reject(
         new Error(
@@ -17,7 +17,11 @@
       );
     }
     const options =
-      typeof displayIndex === "number" ? { displayIndex: displayIndex } : {};
+      typeof displayIndexOrOptions === "number"
+        ? { displayIndex: displayIndexOrOptions }
+        : typeof displayIndexOrOptions === "object" && displayIndexOrOptions != null
+          ? displayIndexOrOptions
+          : {};
     return electronAPI
       .captureScreen(options)
       .then(function (buffer) {

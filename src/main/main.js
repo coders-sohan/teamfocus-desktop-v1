@@ -247,16 +247,76 @@ function setApplicationMenu(win) {
 }
 
 function registerScreenshotIPC() {
-  ipcMain.handle("get-displays", () => {
+  ipcMain.handle("get-displays", async () => {
     const all = screen.getAllDisplays();
     const primary = screen.getPrimaryDisplay();
-    return all.map((d, i) => ({
+    const isPrimary = (d) => d.id === primary.id;
+
+    if (process.platform !== "win32") {
+      const sorted = [...all].sort((a, b) => (isPrimary(a) ? 0 : 1) - (isPrimary(b) ? 0 : 1));
+      return sorted.map((d, i) => ({
+        index: i,
+        id: d.id,
+        bounds: d.bounds,
+        workArea: d.workArea,
+        scaleFactor: d.scaleFactor,
+        primary: isPrimary(d),
+        screenId: null,
+      }));
+    }
+
+    let screenshotDesktop;
+    try {
+      screenshotDesktop = require("screenshot-desktop");
+    } catch (e) {
+      return all.map((d, i) => ({
+        index: i,
+        id: d.id,
+        bounds: d.bounds,
+        workArea: d.workArea,
+        scaleFactor: d.scaleFactor,
+        primary: isPrimary(d),
+        screenId: null,
+      }));
+    }
+
+    let libDisplays = [];
+    try {
+      libDisplays = await screenshotDesktop.listDisplays();
+    } catch (err) {
+      console.warn("[TeamFocus] listDisplays failed, using Electron order:", err);
+    }
+
+    function matchBounds(eBounds, libD) {
+      const ex = eBounds.x;
+      const ey = eBounds.y;
+      const ew = eBounds.width;
+      const eh = eBounds.height;
+      const lx = libD.left;
+      const ly = libD.top;
+      const lw = libD.width;
+      const lh = libD.height;
+      return Math.abs(ex - lx) <= 2 && Math.abs(ey - ly) <= 2 && Math.abs(ew - lw) <= 2 && Math.abs(eh - lh) <= 2;
+    }
+
+    const withScreenId = all.map((d) => {
+      const lib = libDisplays.find((ld) => matchBounds(d.bounds, ld));
+      return {
+        electron: d,
+        primary: isPrimary(d),
+        screenId: lib ? lib.id : null,
+      };
+    });
+
+    const sorted = withScreenId.sort((a, b) => (a.primary ? 0 : 1) - (b.primary ? 0 : 1));
+    return sorted.map((d, i) => ({
       index: i,
-      id: d.id,
-      bounds: d.bounds,
-      workArea: d.workArea,
-      scaleFactor: d.scaleFactor,
-      primary: d.id === primary.id,
+      id: d.electron.id,
+      bounds: d.electron.bounds,
+      workArea: d.electron.workArea,
+      scaleFactor: d.electron.scaleFactor,
+      primary: d.primary,
+      screenId: d.screenId,
     }));
   });
 
@@ -272,11 +332,15 @@ function registerScreenshotIPC() {
         "Screenshot capture not available. Install with: yarn add screenshot-desktop",
       );
     }
+    const screenId = options && typeof options.screenId === "string" && options.screenId.length > 0
+      ? options.screenId
+      : null;
     const displayIndex =
       options && typeof options.displayIndex === "number"
         ? options.displayIndex
         : 0;
-    const buffer = await screenshotDesktop({ screen: displayIndex });
+    const screenOption = screenId != null ? screenId : displayIndex;
+    const buffer = await screenshotDesktop({ screen: screenOption });
     return buffer;
   });
 }
