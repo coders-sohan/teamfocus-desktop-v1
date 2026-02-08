@@ -352,11 +352,17 @@
     }
     appState.subscribeWorkStatus(onWorkStatusChange);
     onWorkStatusChange();
+    if (window.heartbeatService && window.heartbeatService.init) {
+      window.heartbeatService.init();
+    }
     initNavLinks();
     var btn = getLogoutBtn();
     if (btn) {
       btn.addEventListener("click", function () {
         stopHeaderClock();
+        if (window.heartbeatService && window.heartbeatService.destroy) {
+          window.heartbeatService.destroy();
+        }
         authService.logout();
         appState.clear();
         if (window.showLogin) {
