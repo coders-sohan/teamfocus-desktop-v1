@@ -36,12 +36,15 @@
           err && err.message
             ? err.message
             : "Screenshot capture failed.";
+        // Use the message from main process if it already includes Windows/macOS steps
         var userMsg =
-          msg.toLowerCase().indexOf("permission") !== -1 ||
-          msg.toLowerCase().indexOf("denied") !== -1 ||
-          msg.toLowerCase().indexOf("access") !== -1
-            ? "Screen capture was denied. Please allow screen recording in System Settings (macOS) or display permissions (Windows), then try again."
-            : "Screenshot capture failed. If this persists, check screen recording permissions in system settings.";
+          msg.indexOf("On Windows:") !== -1 || msg.indexOf("On macOS:") !== -1
+            ? msg
+            : msg.toLowerCase().indexOf("permission") !== -1 ||
+              msg.toLowerCase().indexOf("denied") !== -1 ||
+              msg.toLowerCase().indexOf("access") !== -1
+                ? "Screen capture was denied. Please allow screen recording in System Settings (macOS) or display permissions (Windows), then try again."
+                : "Screenshot capture failed. If this persists, check screen recording permissions in system settings.";
         if (
           typeof window !== "undefined" &&
           window.dispatchEvent &&

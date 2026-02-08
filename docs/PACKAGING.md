@@ -41,16 +41,21 @@ Place `assets/teamfocus.ico` (Windows) and `assets/teamfocus.icns` (macOS) in th
 
 ## Code signing (optional)
 
-- **Windows:** Set env vars before `yarn make`:
-  - `WIN_CERTIFICATE_FILE` – path to `.pfx`
-  - `WIN_CERTIFICATE_PASSWORD` – certificate password  
-  Configured in `forge.config.js` for the Squirrel maker.
+No environment variables. Use an optional `signing.config.js` in the desktop folder when you have certificates:
 
-- **macOS:** Set env vars for notarization:
-  - `APPLE_ID` – Apple ID email
-  - `APPLE_TEAM_ID` – Team ID
-  - `APPLE_APP_SPECIFIC_PASSWORD` – app-specific password  
-  Configured in `forge.config.js` under `packagerConfig.osxNotarize`.
+```js
+// signing.config.js (gitignored)
+module.exports = {
+  winCertificateFile: undefined,   // path to .pfx
+  winCertificatePassword: undefined,
+  appleId: undefined,
+  appleTeamId: undefined,
+  appleAppSpecificPassword: undefined,
+};
+```
+
+- **Windows:** Set `winCertificateFile` and `winCertificatePassword`. Used by the Squirrel maker.
+- **macOS:** Set `appleId`, `appleTeamId`, and `appleAppSpecificPassword` for notarization.
 
 ## Auto-updater (optional)
 

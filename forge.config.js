@@ -11,9 +11,22 @@ const iconIcns = path.join(assetsDir, "teamfocus.icns");
 const hasIco = fs.existsSync(iconIco);
 const hasIcns = fs.existsSync(iconIcns);
 
+// Optional signing config (no process.env). Create signing.config.js when you have certificates; see docs/PACKAGING.md.
+const signingPath = path.join(__dirname, "signing.config.js");
+let signing = {};
+if (fs.existsSync(signingPath)) {
+  try {
+    signing = require(signingPath);
+  } catch (e) {
+    console.warn("[forge] signing.config.js load failed:", e.message);
+  }
+}
+
 module.exports = {
   packagerConfig: {
     asar: true,
+    // Unpack screenshot-desktop Windows batch file so it can run when packaged
+    asarUnpack: ["**/node_modules/screenshot-desktop/lib/win32/**"],
     name: "TeamFocus",
     executableName: "teamfocus",
     icon: hasIcns ? iconIcns : hasIco ? iconIco : iconPng,
@@ -27,11 +40,11 @@ module.exports = {
     },
     ...(process.platform === "darwin" && {
       osxSign: {},
-      ...(process.env.APPLE_ID && {
+      ...(signing.appleId && {
         osxNotarize: {
-          teamId: process.env.APPLE_TEAM_ID,
-          appleId: process.env.APPLE_ID,
-          appleIdPassword: process.env.APPLE_APP_SPECIFIC_PASSWORD,
+          teamId: signing.appleTeamId,
+          appleId: signing.appleId,
+          appleIdPassword: signing.appleAppSpecificPassword,
         },
       }),
     }),
@@ -40,6 +53,7 @@ module.exports = {
     force: true,
   },
   makers: [
+    // Windows: Squirrel maker (official @electron-forge package)
     {
       name: "@electron-forge/maker-squirrel",
       config: {
@@ -48,8 +62,8 @@ module.exports = {
         authors: "RISOSI",
         description: "TeamFocus Desktop App - Work tracking and screenshot capture for team members",
         exe: "teamfocus.exe",
-        certificateFile: process.env.WIN_CERTIFICATE_FILE || undefined,
-        certificatePassword: process.env.WIN_CERTIFICATE_PASSWORD || undefined,
+        certificateFile: signing.winCertificateFile || undefined,
+        certificatePassword: signing.winCertificatePassword || undefined,
       },
     },
     {

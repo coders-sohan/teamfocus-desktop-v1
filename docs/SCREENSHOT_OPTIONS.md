@@ -1,5 +1,15 @@
 # Screenshot options (Win+PrtSc style – all monitors in one image)
 
+## "Screenshot capture failed" — why it happens and how to fix
+
+- **Windows**
+  - **Permissions:** Windows can block screen capture. Go to **Settings > Privacy & security > Screen recording** (or **Graphics capture**) and ensure **TeamFocus** is allowed. After changing, restart the app.
+  - **Packaged app:** The installer unpacks `screenshot-desktop`’s Windows batch file so it can run. If you built the app yourself, ensure `forge.config.js` includes `asarUnpack` for `**/node_modules/screenshot-desktop/lib/win32/**`.
+- **macOS**
+  - **Screen Recording:** Open **System Settings > Privacy & Security > Screen Recording** and add **TeamFocus**. Restart the app after enabling.
+
+If the error persists, check the main process console (or run with DevTools) for the underlying error (e.g. permission denied, file not found).
+
 ## What Windows does
 
 - **PrtSc** – Copies the entire screen to the clipboard (on many setups this is the *full virtual screen*, i.e. all monitors in one image).

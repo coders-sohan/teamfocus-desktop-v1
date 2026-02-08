@@ -340,8 +340,19 @@ function registerScreenshotIPC() {
         ? options.displayIndex
         : 0;
     const screenOption = screenId != null ? screenId : displayIndex;
-    const buffer = await screenshotDesktop({ screen: screenOption });
-    return buffer;
+    try {
+      const buffer = await screenshotDesktop({ screen: screenOption });
+      return buffer;
+    } catch (err) {
+      console.error("[TeamFocus] capture-screen error:", err);
+      const isWindows = process.platform === "win32";
+      const hint = isWindows
+        ? "On Windows: open Settings > Privacy & security > Screen recording (or Graphics capture) and ensure TeamFocus is allowed. If you just installed, try restarting the app."
+        : "On macOS: open System Settings > Privacy & Security > Screen Recording and add TeamFocus.";
+      throw new Error(
+        (err && err.message ? err.message : "Screen capture failed.") + " " + hint,
+      );
+    }
   });
 }
 
