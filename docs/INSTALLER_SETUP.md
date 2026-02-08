@@ -3,7 +3,7 @@
 ## What Was Fixed
 
 ✅ **Windows: Squirrel installer** (official Electron Forge maker)
-✅ **Code signing support** - Optional signing.config.js (removes SmartScreen warning when signed)
+✅ **Code signing support** - Optional signing.config.js (purchased cert removes SmartScreen warning; self-signed does not)
 ✅ **Branding configured** - RISOSI publisher, TeamFocus icon
 
 ## Next Steps
@@ -51,7 +51,12 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 .\create-signing-cert.ps1
 ```
 
-Then run `yarn make`. The script creates `certs/teamfocus-signing.pfx` and `signing.config.js`; both are gitignored. **Note:** Self-signed certs may still trigger a SmartScreen warning; a purchased cert reduces or removes it.
+Then run `yarn make`. The script creates `certs/teamfocus-signing.pfx` and `signing.config.js`; both are gitignored.
+
+### "Unknown publisher" / SmartScreen still appears
+
+- **Self-signed certificate** (from `create-signing-cert.ps1`): Windows does **not** trust it as a known publisher, so SmartScreen will still show "Unknown publisher" and may block. Users can click **More info** → **Run anyway** to install.
+- **To remove the warning**: Use a **purchased code signing certificate** from a trusted CA (DigiCert, Sectigo, GlobalSign, etc.). Put that certificate’s `.pfx` path and password in `signing.config.js`, run `yarn make`, and distribute the new installer. The publisher will then be recognized and SmartScreen will stop blocking (after the cert gains reputation).
 
 ## What Changed
 
