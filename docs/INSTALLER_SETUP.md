@@ -34,15 +34,24 @@ Output: `out/make/squirrel.windows/x64/TeamFocus Setup 1.0.0.exe` (or similar)
 - Export as `.pfx` file
 - Create `signing.config.js` with `winCertificateFile` and `winCertificatePassword`, then run `yarn make`.
 
-**Option B: Self-Signed** (Testing only - still shows warnings)
-```powershell
-# Run as Administrator
-$cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=RISOSI" -KeyUsage DigitalSignature -FriendlyName "RISOSI Code Signing" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddYears(1)
-$password = ConvertTo-SecureString -String "YourPassword123" -Force -AsPlainText
-Export-PfxCertificate -Cert $cert -FilePath "risosi-cert.pfx" -Password $password
+**Option B: Self-signed cert (script)** — Creates a certificate and `signing.config.js` with a strong random password. No Admin required.
+
+From **CMD** (run from repo root or `desktop` folder):
+
+```cmd
+cd D:\RISOSI\TeamFocus\desktop
+powershell -ExecutionPolicy Bypass -File create-signing-cert.ps1
 ```
 
-Then in `signing.config.js` set `winCertificateFile` to the path of `risosi-cert.pfx` and `winCertificatePassword` to the password you used.
+From **PowerShell**:
+
+```powershell
+cd D:\RISOSI\TeamFocus\desktop
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+.\create-signing-cert.ps1
+```
+
+Then run `yarn make`. The script creates `certs/teamfocus-signing.pfx` and `signing.config.js`; both are gitignored. **Note:** Self-signed certs may still trigger a SmartScreen warning; a purchased cert reduces or removes it.
 
 ## What Changed
 

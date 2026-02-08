@@ -6,4 +6,6 @@ out/
 Thumbs.db
 
 # Optional signing config (paths/passwords) — see docs/PACKAGING.md
-signing.config.js
+# signing.config.js
+# Certificate and keys (created by create-signing-cert.ps1)
+# certs/
