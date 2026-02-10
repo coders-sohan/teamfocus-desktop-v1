@@ -34,13 +34,26 @@
   }
 
   function uploadFromCapture(screenshotBlob, activeWindowInfo) {
+    var platform = (window.electronAPI && window.electronAPI.platform) || "";
     var appName = "";
     var windowTitle = "";
     var domain = "";
+
     if (activeWindowInfo) {
       appName = activeWindowInfo.appName != null ? String(activeWindowInfo.appName) : "";
       windowTitle = activeWindowInfo.windowTitle != null ? String(activeWindowInfo.windowTitle) : "";
       domain = getDomainFromUrl(activeWindowInfo.url || "");
+    } else {
+      // Fallback labels so backend isn't completely empty when active window is unavailable
+      if (platform === "linux") {
+        appName = "Linux desktop";
+      } else if (platform === "win32") {
+        appName = "Windows desktop";
+      } else if (platform === "darwin") {
+        appName = "macOS desktop";
+      } else {
+        appName = "Desktop";
+      }
     }
     var formData = buildFormData(screenshotBlob, {
       appName: appName,
