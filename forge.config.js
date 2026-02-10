@@ -88,6 +88,7 @@ module.exports = {
       name: "@electron-forge/maker-deb",
       config: {
         options: {
+          bin: "teamfocus",
           maintainer: "RISOSI",
           homepage: "https://risosi.com",
           description: "TeamFocus - Time & activity tracking for remote teams",
@@ -98,6 +99,7 @@ module.exports = {
       name: "@electron-forge/maker-rpm",
       config: {
         options: {
+          bin: "teamfocus",
           maintainer: "RISOSI",
           homepage: "https://risosi.com",
           description: "TeamFocus - Time & activity tracking for remote teams",
