@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "active-win": "^9.0.0",
-    "electron-squirrel-startup": "^1.0.1",
-    "screenshot-desktop": "^1.15.3"
+    "electron-squirrel-startup": "^1.0.1"
   }
 }

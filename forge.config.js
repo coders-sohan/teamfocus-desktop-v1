@@ -25,8 +25,6 @@ if (fs.existsSync(signingPath)) {
 module.exports = {
   packagerConfig: {
     asar: true,
-    // Unpack entire screenshot-desktop so win32 .bat/.manifest are available when packaged (ENOENT fix)
-    asarUnpack: ["**/node_modules/screenshot-desktop/**"],
     // Exclude other platforms' native bindings when building for Windows so signtool doesn't try to sign them
     ignore: (path) => {
       if (path.includes("active-win") && (path.includes("darwin") || path.includes("linux"))) return true;

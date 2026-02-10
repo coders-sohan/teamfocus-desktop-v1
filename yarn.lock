@@ -3558,13 +3558,6 @@ schema-utils@^4.3.0, schema-utils@^4.3.3:
     ajv-formats "^2.1.1"
     ajv-keywords "^5.1.0"
 
-screenshot-desktop@^1.15.3:
-  version "1.15.3"
-  resolved "https://registry.yarnpkg.com/screenshot-desktop/-/screenshot-desktop-1.15.3.tgz#59c1abd904e21a5870d8930263db591923cc2eae"
-  integrity sha512-bHztitCmaa+A+ssxRa3LDNepQzCHEEAkz1FaJjoZx2yDMkHIkHLKKcc5xMgkGNas97wSGboSB2BoO0c4RnjlJw==
-  dependencies:
-    temp "^0.9.4"
-
 semver-compare@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/semver-compare/-/semver-compare-1.0.0.tgz#0dee216a1c941ab37e9efb1788f6afc5ff5537fc"
@@ -3873,7 +3866,7 @@ tar@^7.4.3, tar@^7.5.6:
     minizlib "^3.1.0"
     yallist "^5.0.0"
 
-temp@^0.9.0, temp@^0.9.4:
+temp@^0.9.0:
   version "0.9.4"
   resolved "https://registry.yarnpkg.com/temp/-/temp-0.9.4.tgz#cd20a8580cb63635d0e4e9d4bd989d44286e7620"
   integrity sha512-yYrrsWnrXMcdsnu/7YMYAofM1ktpL5By7vZhf15CrXijWWrEYZks5AXBudalfSWJLlnen/QUJUB5aoB0kqZUGA==

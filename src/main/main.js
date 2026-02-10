@@ -9,6 +9,7 @@ const {
   shell,
   Tray,
   nativeImage,
+  desktopCapturer,
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -252,105 +253,68 @@ function registerScreenshotIPC() {
     const primary = screen.getPrimaryDisplay();
     const isPrimary = (d) => d.id === primary.id;
 
-    if (process.platform !== "win32") {
-      const sorted = [...all].sort((a, b) => (isPrimary(a) ? 0 : 1) - (isPrimary(b) ? 0 : 1));
-      return sorted.map((d, i) => ({
-        index: i,
-        id: d.id,
-        bounds: d.bounds,
-        workArea: d.workArea,
-        scaleFactor: d.scaleFactor,
-        primary: isPrimary(d),
-        screenId: null,
-      }));
-    }
-
-    let screenshotDesktop;
-    try {
-      screenshotDesktop = require("screenshot-desktop");
-    } catch (e) {
-      return all.map((d, i) => ({
-        index: i,
-        id: d.id,
-        bounds: d.bounds,
-        workArea: d.workArea,
-        scaleFactor: d.scaleFactor,
-        primary: isPrimary(d),
-        screenId: null,
-      }));
-    }
-
-    let libDisplays = [];
-    try {
-      libDisplays = await screenshotDesktop.listDisplays();
-    } catch (err) {
-      console.warn("[TeamFocus] listDisplays failed, using Electron order:", err);
-    }
-
-    function matchBounds(eBounds, libD) {
-      const ex = eBounds.x;
-      const ey = eBounds.y;
-      const ew = eBounds.width;
-      const eh = eBounds.height;
-      const lx = libD.left;
-      const ly = libD.top;
-      const lw = libD.width;
-      const lh = libD.height;
-      return Math.abs(ex - lx) <= 2 && Math.abs(ey - ly) <= 2 && Math.abs(ew - lw) <= 2 && Math.abs(eh - lh) <= 2;
-    }
-
-    const withScreenId = all.map((d) => {
-      const lib = libDisplays.find((ld) => matchBounds(d.bounds, ld));
-      return {
-        electron: d,
-        primary: isPrimary(d),
-        screenId: lib ? lib.id : null,
-      };
-    });
-
-    const sorted = withScreenId.sort((a, b) => (a.primary ? 0 : 1) - (b.primary ? 0 : 1));
+    const sorted = [...all].sort((a, b) => (isPrimary(a) ? 0 : 1) - (isPrimary(b) ? 0 : 1));
     return sorted.map((d, i) => ({
       index: i,
-      id: d.electron.id,
-      bounds: d.electron.bounds,
-      workArea: d.electron.workArea,
-      scaleFactor: d.electron.scaleFactor,
-      primary: d.primary,
-      screenId: d.screenId,
+      id: d.id,
+      bounds: d.bounds,
+      workArea: d.workArea,
+      scaleFactor: d.scaleFactor,
+      primary: isPrimary(d),
+      screenId: null,
     }));
   });
 
   ipcMain.handle("capture-screen", async (_event, options) => {
-    let screenshotDesktop;
     try {
-      screenshotDesktop = require("screenshot-desktop");
-    } catch (e) {
-      console.error(
-        "[TeamFocus] screenshot-desktop not installed. Run: yarn add screenshot-desktop",
-      );
-      throw new Error(
-        "Screenshot capture not available. Install with: yarn add screenshot-desktop",
-      );
-    }
-    const screenId = options && typeof options.screenId === "string" && options.screenId.length > 0
-      ? options.screenId
-      : null;
-    const displayIndex =
-      options && typeof options.displayIndex === "number"
-        ? options.displayIndex
-        : 0;
-    const screenOption = screenId != null ? screenId : displayIndex;
-    try {
-      const buffer = await screenshotDesktop({ screen: screenOption });
-      return buffer;
+      const displays = screen.getAllDisplays();
+      if (!displays || displays.length === 0) {
+        throw new Error("No displays available for capture.");
+      }
+
+      const displayIndex =
+        options && typeof options.displayIndex === "number"
+          ? options.displayIndex
+          : 0;
+      const targetDisplay =
+        displays[Math.max(0, Math.min(displayIndex, displays.length - 1))];
+
+      const scale = typeof targetDisplay.scaleFactor === "number" ? targetDisplay.scaleFactor : 1;
+      const size = targetDisplay.size || { width: 1280, height: 720 };
+      const thumbnailSize = {
+        width: Math.max(1, Math.round(size.width * scale)),
+        height: Math.max(1, Math.round(size.height * scale)),
+      };
+
+      const sources = await desktopCapturer.getSources({
+        types: ["screen"],
+        thumbnailSize,
+        fetchWindowIcons: false,
+      });
+
+      const displayIdStr = targetDisplay && targetDisplay.id != null ? String(targetDisplay.id) : null;
+      const match =
+        (displayIdStr
+          ? sources.find(
+              (s) =>
+                s &&
+                (s.display_id === displayIdStr || s.displayId === displayIdStr),
+            )
+          : null) ||
+        sources[displayIndex] ||
+        sources[0];
+
+      if (!match || !match.thumbnail || match.thumbnail.isEmpty()) {
+        throw new Error("Screen capture failed. No image returned.");
+      }
+
+      const png = match.thumbnail.toPNG(); // Buffer
+      return Uint8Array.from(png).buffer;
     } catch (err) {
       console.error("[TeamFocus] capture-screen error:", err);
       const isWindows = process.platform === "win32";
-      const isEnonent = err && err.code === "ENOENT";
       const hint = isWindows
-        ? (isEnonent
-          ? "A required file may be missing — try reinstalling the app. You can also open Privacy & security and ensure TeamFocus is allowed for screen recording."
-          : "Open Settings > Privacy & security > Screen recording (or Graphics capture) and ensure TeamFocus is allowed. If you just installed, try restarting the app.")
+        ? "On Windows: open Settings > Privacy & security > Screen recording (or Graphics capture) and ensure TeamFocus is allowed. If you just installed, try restarting the app."
         : "On macOS: open System Settings > Privacy & Security > Screen Recording and add TeamFocus.";
       throw new Error(
         (err && err.message ? err.message : "Screen capture failed.") + " " + hint,

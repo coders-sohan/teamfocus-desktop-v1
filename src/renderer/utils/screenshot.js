@@ -31,26 +31,6 @@
         return blob;
       })
       .catch(function (err) {
-        console.error("[screenshot] captureScreen error:", err);
-
-        // Alternative solution: fallback to Electron desktopCapturer (Windows-friendly)
-        if (electronAPI && typeof electronAPI.captureScreenFallback === "function") {
-          return electronAPI
-            .captureScreenFallback(options)
-            .then(function (fallbackBuffer) {
-              if (!fallbackBuffer) return null;
-              var blob = new Blob([new Uint8Array(fallbackBuffer)]);
-              return blob;
-            })
-            .catch(function (fallbackErr) {
-              console.error("[screenshot] fallback captureScreen error:", fallbackErr);
-              throw err; // bubble original error to message handler below
-            });
-        }
-
-        throw err;
-      })
-      .catch(function (err) {
         // unified error -> user-friendly message
         var msg = err && err.message ? err.message : "Screenshot capture failed.";
 
