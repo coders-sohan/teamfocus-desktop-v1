@@ -335,7 +335,9 @@
 
   function onScreenshotError(e) {
     var msg = (e && e.detail && e.detail.message) ? e.detail.message : "Screenshot capture failed.";
-    if (window.teamfocusNotifications && window.teamfocusNotifications.showError) {
+    if (window.teamfocusNotifications && window.teamfocusNotifications.showScreenshotError) {
+      window.teamfocusNotifications.showScreenshotError(msg);
+    } else if (window.teamfocusNotifications && window.teamfocusNotifications.showError) {
       window.teamfocusNotifications.showError(msg);
     }
   }

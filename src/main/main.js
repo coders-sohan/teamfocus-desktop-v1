@@ -346,8 +346,11 @@ function registerScreenshotIPC() {
     } catch (err) {
       console.error("[TeamFocus] capture-screen error:", err);
       const isWindows = process.platform === "win32";
+      const isEnonent = err && err.code === "ENOENT";
       const hint = isWindows
-        ? "On Windows: open Settings > Privacy & security > Screen recording (or Graphics capture) and ensure TeamFocus is allowed. If you just installed, try restarting the app."
+        ? (isEnonent
+          ? "A required file may be missing — try reinstalling the app. You can also open Privacy & security and ensure TeamFocus is allowed for screen recording."
+          : "Open Settings > Privacy & security > Screen recording (or Graphics capture) and ensure TeamFocus is allowed. If you just installed, try restarting the app.")
         : "On macOS: open System Settings > Privacy & Security > Screen Recording and add TeamFocus.";
       throw new Error(
         (err && err.message ? err.message : "Screen capture failed.") + " " + hint,
@@ -492,6 +495,16 @@ function createWindow() {
   createTray();
 }
 
+function registerOpenPrivacyIPC() {
+  ipcMain.handle("open-privacy-settings", () => {
+    if (process.platform === "win32") {
+      shell.openExternal("ms-settings:privacy");
+    } else if (process.platform === "darwin") {
+      shell.openExternal("x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture");
+    }
+  });
+}
+
 function registerAppLifecycleIPC() {
   ipcMain.handle("get-auto-launch", () => {
     try {
@@ -538,6 +551,7 @@ app.on("ready", () => {
   registerScreenshotIPC();
   registerActiveWindowIPC();
   registerSecureStorageIPC();
+  registerOpenPrivacyIPC();
   registerAppLifecycleIPC();
   createWindow();
 });
