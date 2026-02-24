@@ -68,6 +68,14 @@
         showLogin();
         return;
       }
+      if (storage.isSessionExpired && storage.isSessionExpired()) {
+        authService.logout();
+        showLogin();
+        if (window.loginPage && window.loginPage.showError) {
+          window.loginPage.showError("Your session has expired after 30 days. Please log in again.");
+        }
+        return;
+      }
       return authService.getCurrentUser();
     }).then(function (user) {
       if (!user || user.role !== "user") {
@@ -89,6 +97,18 @@
           window.loginPage.showError("Trial ended. Please contact your team manager.");
         }
         return;
+      }
+      if (appState.user && appState.user.workSessionActive === true) {
+        return (window.workEventsService && window.workEventsService.createWorkEvent
+          ? window.workEventsService.createWorkEvent("stop").catch(function () {})
+          : Promise.resolve()
+        ).then(function () {
+          return window.apiClient && window.apiClient.post
+            ? window.apiClient.post("/users/me/heartbeat", { workSessionActive: false }).catch(function () {})
+            : Promise.resolve();
+        }).then(function () {
+          showDashboard();
+        });
       }
       showDashboard();
     })
@@ -132,7 +152,7 @@
         appState.clear();
         showLogin();
         if (window.loginPage && window.loginPage.showError) {
-          window.loginPage.showError("Session expired. Please sign in again.");
+          window.loginPage.showError("Your session has expired. Please log in again.");
         }
       };
     }

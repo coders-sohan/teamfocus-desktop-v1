@@ -131,13 +131,58 @@ function isNewerVersion(latest, current) {
   return false;
 }
 
+function getPlatformForUpdate() {
+  if (process.platform === "darwin") return "macos";
+  if (process.platform === "win32") return "windows";
+  if (process.platform === "linux") return "linux";
+  return null;
+}
+
+function getApiOrigin(apiBase) {
+  try {
+    return new URL(apiBase).origin;
+  } catch (e) {
+    return "https://api-teamfocus.risosi.com";
+  }
+}
+
+async function downloadAndInstallUpdate(release, apiBase) {
+  const apiOrigin = getApiOrigin(apiBase);
+  const downloadPath = release.downloadUrl
+    ? (release.downloadUrl.startsWith("http") ? release.downloadUrl : apiOrigin + release.downloadUrl)
+    : apiOrigin + "/api/v1/applications/download/" + (release.id || release._id);
+  const fileName = release.fileName || "TeamFocus-Update." + (release.fileType || "exe");
+  const savePath = path.join(app.getPath("temp"), fileName);
+
+  try {
+    const res = await fetch(downloadPath, { redirect: "follow" });
+    if (!res.ok) throw new Error("Download failed: " + res.status);
+    const buf = Buffer.from(await res.arrayBuffer());
+    fs.writeFileSync(savePath, buf);
+    const opened = await shell.openPath(savePath);
+    if (opened) {
+      dialog.showMessageBox(mainWindow || null, {
+        type: "info",
+        title: "Update downloaded",
+        message: "The installer could not be opened automatically.",
+        detail: "Saved to: " + savePath,
+      });
+    }
+  } catch (err) {
+    console.error("[TeamFocus] Download update error:", err);
+    dialog.showMessageBox(mainWindow || null, {
+      type: "error",
+      title: "Download failed",
+      message: "Could not download the update.",
+      detail: (err && err.message) || "Please try again or download from the website.",
+    });
+    const frontendUrl = (config && config.frontendUrl) || "https://teamfocus.risosi.com";
+    shell.openExternal(frontendUrl.replace(/\/$/, "") + "/desktop");
+  }
+}
+
 async function checkForUpdate() {
-  const platform =
-    process.platform === "darwin"
-      ? "macos"
-      : process.platform === "win32"
-        ? "windows"
-        : null;
+  const platform = getPlatformForUpdate();
   const currentVersion = require("../../package.json").version || "0.0.0";
   const apiBase =
     (config && config.apiBaseUrl) || "https://api-teamfocus.risosi.com/api/v1";
@@ -177,21 +222,24 @@ async function checkForUpdate() {
     }
 
     if (isNewerVersion(latestVersion, currentVersion)) {
-      const frontendDesktop = `${frontendUrl.replace(/\/$/, "")}/desktop`;
-      shell.openExternal(frontendDesktop);
-      dialog.showMessageBox(mainWindow || null, {
+      const { response: btn } = await dialog.showMessageBox(mainWindow || null, {
         type: "info",
         title: "Update available",
-        message: `Version ${latestVersion} is available.`,
-        detail:
-          "A new tab has been opened. Download the update from the TeamFocus website.",
+        message: "Version " + latestVersion + " is available.",
+        detail: "Download and install now, or open the website to download manually.",
+        buttons: ["Download and install", "Later"],
+        defaultId: 0,
+        cancelId: 1,
       });
+      if (btn === 0) {
+        await downloadAndInstallUpdate(release, apiBase);
+      }
     } else {
       dialog.showMessageBox(mainWindow || null, {
         type: "info",
         title: "Check for update",
         message: "You're up to date.",
-        detail: `You're running the latest version (${currentVersion}).`,
+        detail: "You're running the latest version (" + currentVersion + ").",
       });
     }
   } catch (err) {
