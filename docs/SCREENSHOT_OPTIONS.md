@@ -7,6 +7,7 @@
   - **Packaged app:** The installer unpacks `screenshot-desktop`’s Windows batch file so it can run. If you built the app yourself, ensure `forge.config.js` includes `asarUnpack` for `**/node_modules/screenshot-desktop/lib/win32/**`.
 - **macOS**
   - **Screen Recording:** Open **System Settings > Privacy & Security > Screen Recording** and add **TeamFocus**. Restart the app after enabling.
+  - **Permission granted but still fails:** If TeamFocus is already in the list with the toggle ON, try: (1) Fully quit TeamFocus (Cmd+Q), (2) Toggle Screen Recording **off** then **on** for TeamFocus in System Settings, (3) Reopen TeamFocus. macOS sometimes needs this to refresh the permission state.
 
 If the error persists, check the main process console (or run with DevTools) for the underlying error (e.g. permission denied, file not found).
 

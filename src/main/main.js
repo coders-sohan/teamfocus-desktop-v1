@@ -10,6 +10,7 @@ const {
   Tray,
   nativeImage,
   desktopCapturer,
+  systemPreferences,
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -314,7 +315,7 @@ function registerScreenshotIPC() {
   });
 
   ipcMain.handle("capture-screen", async (_event, options) => {
-    try {
+    const doCapture = async () => {
       const displays = screen.getAllDisplays();
       if (!displays || displays.length === 0) {
         throw new Error("No displays available for capture.");
@@ -329,9 +330,13 @@ function registerScreenshotIPC() {
 
       const scale = typeof targetDisplay.scaleFactor === "number" ? targetDisplay.scaleFactor : 1;
       const size = targetDisplay.size || { width: 1280, height: 720 };
+      const rawW = Math.max(1, Math.round(size.width * scale));
+      const rawH = Math.max(1, Math.round(size.height * scale));
+      const maxDim = 2560;
+      const scaleDown = Math.max(rawW, rawH) > maxDim ? maxDim / Math.max(rawW, rawH) : 1;
       const thumbnailSize = {
-        width: Math.max(1, Math.round(size.width * scale)),
-        height: Math.max(1, Math.round(size.height * scale)),
+        width: Math.max(1, Math.round(rawW * scaleDown)),
+        height: Math.max(1, Math.round(rawH * scaleDown)),
       };
 
       const sources = await desktopCapturer.getSources({
@@ -356,17 +361,39 @@ function registerScreenshotIPC() {
         throw new Error("Screen capture failed. No image returned.");
       }
 
-      const png = match.thumbnail.toPNG(); // Buffer
+      const png = match.thumbnail.toPNG();
       return Uint8Array.from(png).buffer;
+    };
+
+    try {
+      if (process.platform === "darwin" && systemPreferences && systemPreferences.getMediaAccessStatus) {
+        const status = systemPreferences.getMediaAccessStatus("screen");
+        if (status !== "granted") {
+          const hint = "On macOS: open System Settings > Privacy & Security > Screen Recording and add TeamFocus, then restart the app.";
+          throw new Error("Screen recording permission not granted. " + hint);
+        }
+      }
+
+      try {
+        return await doCapture();
+      } catch (retryErr) {
+        if (process.platform === "darwin" && retryErr.message && retryErr.message.indexOf("No image returned") !== -1) {
+          await new Promise((r) => setTimeout(r, 800));
+          return await doCapture();
+        }
+        throw retryErr;
+      }
     } catch (err) {
       console.error("[TeamFocus] capture-screen error:", err);
+      const msg = err && err.message ? err.message : "Screen capture failed.";
+      if (msg.indexOf("permission not granted") !== -1 || msg.indexOf("On macOS:") !== -1) {
+        throw err;
+      }
       const isWindows = process.platform === "win32";
       const hint = isWindows
         ? "On Windows: open Settings > Privacy & security > Screen recording (or Graphics capture) and ensure TeamFocus is allowed. If you just installed, try restarting the app."
-        : "On macOS: open System Settings > Privacy & Security > Screen Recording and add TeamFocus.";
-      throw new Error(
-        (err && err.message ? err.message : "Screen capture failed.") + " " + hint,
-      );
+        : "If TeamFocus already has Screen Recording permission: fully quit the app (Cmd+Q), toggle Screen Recording off then on for TeamFocus in System Settings, then reopen TeamFocus.";
+      throw new Error(msg + " " + hint);
     }
   });
 }
